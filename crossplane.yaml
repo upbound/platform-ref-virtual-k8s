@@ -1,0 +1,17 @@
+
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Configuration
+metadata:
+  name: platform-ref-virtual-k8s
+spec:
+  crossplane:
+    version: ">=v1.0.0-0"
+  dependsOn:
+    - configuration: registry.upbound.io/upbound/platform-ref-multi-k8s
+      version: ">=v0.0.7-0"
+    # NOTE(hasheddan): we could opt to omit this dependency as it is also a
+    # transitive dependency of platform-ref-multi-k8s. However, including it
+    # here ensures that the version that is installed by the package manager
+    # will fit both constraints.
+    - provider: registry.upbound.io/crossplane/provider-helm
+      version: ">=v0.9.0-0"
