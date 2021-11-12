@@ -1,0 +1,46 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: virtual.compositeclusters.multik8s.platformref.crossplane.io
+  labels:
+    provider: virtual
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: multik8s.platformref.crossplane.io/v1alpha1
+    kind: CompositeCluster
+  resources:
+    - base:
+        apiVersion: helm.crossplane.io/v1beta1
+        kind: Release
+        spec:
+          rollbackLimit: 3
+          forProvider:
+            namespace: vcluster
+            chart:
+              name: vcluster
+              repository: https://charts.loft.sh
+              version: "0.4.3"
+            values:
+              vcluster:
+                image: rancher/k3s:v1.19.5-k3s2 
+                extraArgs:
+                  - --service-cidr=10.96.0.0/12 
+      patches:
+        - fromFieldPath: spec.id
+          toFieldPath: spec.forProvider.namespace
+          policy:
+            fromFieldPath: Required
+        # All Helm releases derive their labels and annotations from the XR.
+        - fromFieldPath: metadata.labels
+          toFieldPath: metadata.labels
+        - fromFieldPath: metadata.annotations
+          toFieldPath: metadata.annotations
+        # NOTE(hasheddan): we temporarily use the network reference ID to
+        # specify which concrete cluster we want to create the virtual cluster
+        # within.
+        - fromFieldPath: spec.parameters.networkRef.id
+          toFieldPath: spec.providerConfigRef.name
+          policy:
+            fromFieldPath: Required
+ 
