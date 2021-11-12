@@ -1,0 +1,19 @@
+apiVersion: multik8s.platformref.crossplane.io/v1alpha1
+kind: Cluster
+metadata:
+  name: multik8s-cluster-virtual
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: virtual
+  id: vcluster-1
+  parameters:
+    # NOTE(hasheddan): virtual clusters ignore node configuration, but it is
+    # required by CompositeCluster XRD.
+    nodes:
+      count: 3
+      size: small
+    networkRef:
+      id: helm-in-cluster
+  writeConnectionSecretToRef:
+    name: cluster-conn-virtual
